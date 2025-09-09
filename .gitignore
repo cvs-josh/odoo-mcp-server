@@ -139,9 +139,16 @@ Thumbs.db
 
 # Test files
 test_*.py
-!tests/test_*.py
 
 # Local configuration
 *.local
 .env.local
 .env.*.local
+
+# Docker Compose with credentials (keep example file)
+docker-compose.yml
+docker-compose.override.yml
+
+logs/
+venv/
+*.log
