@@ -345,6 +345,14 @@ Here is the description how we develop MCP Servers for our customers: https://ww
 
 📺 [Watch the demo on YouTube](https://youtu.be/tanzyt_qEmE)
 
+### Visual Demo
+
+![Odoo MCP Server Demo](docs/images/odoo-demo.gif)
+
+### Example Output
+
+![Output Example](docs/images/output-example.png)
+
 ## Features
 
 - 🔍 **Search Records**: Query any Odoo model with complex domain filters
