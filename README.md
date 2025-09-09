@@ -38,6 +38,305 @@ export ODOO_API_KEY="your-api-key"
 python -m mcp_server_odoo.http_server
 ```
 
+## 🌐 Remote Access with ngrok (AI Agent Integration)
+
+This implementation allows you to expose your local MCP server to AI agents like Flowhunt, enabling remote automation of your Odoo business processes.
+
+### Why Use ngrok?
+
+- **Remote AI Access**: AI agents can connect to your MCP server from anywhere
+- **Business Automation**: Enable Flowhunt and other AI platforms to automate your Odoo workflows
+- **Secure Tunneling**: ngrok provides secure HTTPS tunnels with authentication
+- **No Infrastructure**: No need to deploy to cloud servers
+
+### Setup Instructions
+
+#### 1. Install ngrok
+
+**Download and Install:**
+```bash
+# macOS (using Homebrew)
+brew install ngrok
+
+# Or download directly from https://ngrok.com/download
+```
+
+**Sign up and get your authtoken:**
+1. Go to [ngrok.com](https://ngrok.com) and create a free account
+2. Get your authtoken from the dashboard
+3. Configure ngrok:
+```bash
+ngrok config add-authtoken YOUR_AUTHTOKEN_HERE
+```
+
+#### 2. Start Your MCP Server
+
+```bash
+# Start the MCP server with Docker
+docker-compose up -d
+
+# Verify it's running locally
+curl http://localhost:8000/health
+```
+
+#### 3. Create ngrok Tunnel
+
+```bash
+# Create a public tunnel to your local MCP server
+ngrok http http://localhost:8080
+
+# You'll see output like:
+# Session Status                online
+# Account                       your-email@example.com
+# Version                       3.x.x
+# Region                        United States (us)
+# Latency                       -
+# Web Interface                 http://127.0.0.1:4040
+# Forwarding                    https://abc123.ngrok-free.app -> http://localhost:8000
+```
+
+**Copy the HTTPS URL** (e.g., `https://abc123.ngrok-free.app`) - this is your public MCP server endpoint.
+
+#### 4. Configure Flowhunt Integration
+
+**Flowhunt Implementation Process:**
+
+Create a custom flow with AI Agents:
+
+1. **Create a New Flow:**
+   - Go to Flowhunt Dashboard
+   - Click "Create New Flow"
+   - Give your flow a name (e.g., "Odoo Business Automation")
+
+2. **Add AI Agent Component:**
+   - Drag and drop an "AI Agent" component into your flow
+   - Connect the AI Agent to:
+     - **Input**: Data source or trigger
+     - **Output**: Next step in your workflow
+     - **Chat History**: For context and conversation memory
+     - **MCP Server**: Your Odoo MCP server
+
+3. **Configure MCP Server Connection:**
+   - In the AI Agent settings, go to "MCP Server Configuration"
+   - **Server URL**: `https://abc123.ngrok-free.app`
+   - **Protocol**: HTTP/HTTPS
+   - **Authentication**: None (or configure as needed)
+   - Save the configuration
+
+4. **Test the Connection:**
+   - In your Flowhunt flow, start a chat with the AI Agent
+   - Ask the AI to test the Odoo connection, for example:
+     ```
+     "Can you list all available Odoo models?"
+     "Show me the first 5 customers in the system"
+     "What tools are available for Odoo operations?"
+     ```
+   - The AI should be able to access your Odoo data through the MCP server
+
+#### 5. Flowhunt Workflow Examples
+
+**Complete Flow Setup Process:**
+
+1. **Customer Follow-up Flow:**
+   ```
+   Trigger: Daily schedule or webhook
+   ↓
+   AI Agent: "Find customers who haven't purchased in 6 months"
+   ↓ (uses MCP: search_records)
+   AI Agent: "Create follow-up tasks for each customer"
+   ↓ (uses MCP: create_record)
+   Output: Email report or Slack notification
+   ```
+
+2. **Sales Order Automation:**
+   ```
+   Trigger: New lead qualification webhook
+   ↓
+   AI Agent: "Check if lead is qualified and ready for sales order"
+   ↓ (uses MCP: search_records, get_record)
+   AI Agent: "Create sales order with appropriate products"
+   ↓ (uses MCP: create_record)
+   Output: Sales order confirmation email
+   ```
+
+3. **Inventory Management Flow:**
+   ```
+   Trigger: Hourly schedule
+   ↓
+   AI Agent: "Check all products for low stock levels"
+   ↓ (uses MCP: search_records)
+   AI Agent: "Create purchase orders for items below reorder point"
+   ↓ (uses MCP: create_record)
+   Output: Purchase order notifications to procurement team
+   ```
+
+**AI Agent Prompts for Odoo Operations:**
+
+```bash
+# Customer Management
+"Search for all customers in California with more than $10,000 in total sales"
+
+# Sales Operations
+"Create a new sales order for customer ID 42 with 5 units of product ID 123"
+
+# Inventory Tracking
+"Find all products with stock quantity below 10 and create purchase orders"
+
+# Financial Reporting
+"Generate a report of all unpaid invoices from the last 30 days"
+```
+
+### Advanced ngrok Configuration
+
+#### Custom Subdomain (Paid Plan)
+```bash
+# Use a custom subdomain for consistent URLs
+ngrok http 8000 --subdomain=my-odoo-mcp
+# Results in: https://my-odoo-mcp.ngrok.io
+```
+
+#### Authentication & Security
+```bash
+# Add basic authentication
+ngrok http 8000 --basic-auth="username:password"
+
+# Add custom headers
+ngrok http 8000 --request-header-add="X-Custom-Header: value"
+```
+
+#### Multiple Tunnels
+```bash
+# Create multiple tunnels for different services
+ngrok http 8000 --subdomain=odoo-mcp
+ngrok http 3000 --subdomain=odoo-web
+```
+
+### Production Considerations
+
+#### 1. Persistent Tunnels
+For production use, consider:
+- **ngrok Pro/Enterprise**: For persistent URLs and custom domains
+- **Self-hosted ngrok**: For complete control
+- **Alternative solutions**: Cloudflare Tunnel, localtunnel, etc.
+
+#### 2. Security Best Practices
+```bash
+# Use authentication
+ngrok http 8000 --basic-auth="admin:secure-password"
+
+# Restrict to specific IPs (if using ngrok Pro)
+ngrok http 8000 --allow-cidr="192.168.1.0/24"
+
+# Use custom domains with SSL
+ngrok http 8000 --hostname=your-domain.com
+```
+
+#### 3. Monitoring & Logs
+```bash
+# View ngrok web interface
+# Open http://127.0.0.1:4040 in your browser
+
+# Monitor requests and responses
+# Check MCP server logs
+docker-compose logs -f mcp-server
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+**1. ngrok Tunnel Not Working:**
+```bash
+# Check if ngrok is authenticated
+ngrok config check
+
+# Verify local server is running
+curl http://localhost:8000/health
+
+# Check ngrok status
+ngrok status
+```
+
+**2. AI Agent Can't Connect:**
+- Try asking the AI Agent simple questions in the chat:
+  ```
+  "What Odoo models are available?"
+  "Can you search for customers?"
+  ```
+- Check if the AI responds with Odoo data or error messages
+- Verify the MCP Server URL is correct in the AI Agent settings
+- Ensure the ngrok tunnel is still active (check ngrok dashboard)
+
+**3. Authentication Issues:**
+- If you configured basic authentication in ngrok, ensure the AI Agent settings include the credentials
+- Test in the AI chat by asking: "Can you access the Odoo system?"
+- Check the AI Agent's MCP Server configuration for authentication settings
+- Verify the ngrok tunnel is configured with the same auth credentials
+
+### Integration Examples
+
+#### Flowhunt Flow Configuration
+**In Flowhunt Dashboard:**
+
+1. **Flow Structure:**
+   ```
+   [Input/Trigger] → [AI Agent] → [Output/Action]
+                        ↓
+                   [Chat History]
+                        ↓
+                   [MCP Server] ← ngrok URL
+   ```
+
+2. **AI Agent MCP Settings:**
+   - **MCP Server URL**: `https://abc123.ngrok-free.app`
+   - **Connection Type**: HTTP/HTTPS
+   - **Authentication**: None (or Basic Auth if configured)
+   - **Available Tools**: All 12 Odoo MCP tools will be automatically detected
+
+3. **Flow Example Configuration:**
+   ```yaml
+   Flow Name: "Odoo Customer Management"
+   Components:
+     - Input: Webhook/API trigger
+     - AI Agent: 
+       - Model: GPT-4 or Claude
+       - MCP Server: https://abc123.ngrok-free.app
+       - Chat History: Enabled
+     - Output: Email notification or webhook response
+   ```
+
+#### Custom AI Agent Integration
+```python
+import requests
+
+class RemoteOdooMCPClient:
+    def __init__(self, ngrok_url, auth=None):
+        self.base_url = ngrok_url.rstrip('/')
+        self.auth = auth
+    
+    def call_tool(self, tool_name, **kwargs):
+        response = requests.post(
+            f"{self.base_url}/",
+            json={
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "tools/call",
+                "params": {
+                    "name": tool_name,
+                    "arguments": kwargs
+                }
+            },
+            auth=self.auth
+        )
+        return response.json()
+
+# Usage
+client = RemoteOdooMCPClient("https://abc123.ngrok-free.app")
+customers = client.call_tool("search_records", model="res.partner", limit=10)
+```
+
+This setup enables powerful AI-driven automation of your Odoo business processes through secure remote access!
+
 ## Custom MCP Server Development
 We develop MCP Servers for customers, if you need MCP server for your own system similar to Odoo MCP server, please contact us (https://www.flowhunt.io/contact/). 
 Here is the description how we develop MCP Servers for our customers: https://www.flowhunt.io/services/mcp-server-development/
