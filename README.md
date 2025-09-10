@@ -4,15 +4,15 @@ A hybrid Model Context Protocol (MCP) server that enables AI assistants to inter
 
 ## 📺 Demo
 
+### stdio Mode Demo (Claude Desktop)
+![stdio Mode Demo](docs/images/demo.gif)
+
 ### HTTP Mode Demo (AI Agents & Remote Access)
 ![HTTP Mode Demo](docs/images/odoo-demo.gif)
 
 ### Example Output
 
 ![Output Example](docs/images/output-example.png)
-
-### stdio Mode Demo (Claude Desktop)
-![stdio Mode Demo](docs/images/demo.gif)
 
 ## 🚀 Quick Start
 
