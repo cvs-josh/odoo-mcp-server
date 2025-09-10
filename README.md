@@ -24,13 +24,30 @@ curl http://localhost:8000/health
 
 ### stdio Mode (Claude Desktop)
 
+#### Option 1: Install from PyPI (recommended)
+
 ```bash
 # Install
 pip install odoo-mcp-server
-
-# Configure Claude Desktop
-# Add to ~/.config/claude-desktop/claude_desktop_config.json:
 ```
+
+#### Option 2: Install from source
+
+```bash
+# Clone the repository
+git clone https://github.com/vzeman/odoo-mcp-server.git
+cd odoo-mcp-server
+
+# Install in development mode
+pip install -e .
+```
+
+#### Configure Claude Desktop
+
+Add to your Claude Desktop config file:
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**Windows**: `%APPDATA%/Claude/claude_desktop_config.json`
 
 ```json
 {
@@ -52,6 +69,10 @@ pip install odoo-mcp-server
 ### Local Development
 
 ```bash
+# Clone the repository
+git clone https://github.com/vzeman/odoo-mcp-server.git
+cd odoo-mcp-server
+
 # Install dependencies
 pip install -e .
 
