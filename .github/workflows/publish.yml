@@ -4,17 +4,23 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      test_pypi:
+        description: 'Publish to Test PyPI instead of PyPI'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
-  publish:
+  build-and-publish:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.10'
     
     - name: Install dependencies
       run: |
@@ -24,8 +30,21 @@ jobs:
     - name: Build package
       run: python -m build
     
+    - name: Check package
+      run: twine check dist/*
+    
+    - name: Publish to Test PyPI
+      if: github.event.inputs.test_pypi == 'true'
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      run: |
+        twine upload --repository testpypi dist/*
+    
     - name: Publish to PyPI
+      if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && github.event.inputs.test_pypi != 'true')
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-      run: python -m twine upload dist/*
+      run: |
+        twine upload dist/*
