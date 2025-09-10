@@ -4,7 +4,31 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an MCP (Model Context Protocol) server for Odoo ERP integration. It enables AI assistants to interact with Odoo instances through a standardized protocol.
+This is a hybrid MCP (Model Context Protocol) server for Odoo ERP integration. It supports both:
+- **HTTP Streaming**: For web-based AI agents and remote access
+- **stdio**: For local AI assistants like Claude Desktop
+
+## Architecture
+
+### Dual Implementation
+
+1. **HTTP Mode** (`http_server.py`):
+   - FastAPI-based HTTP server
+   - Supports ngrok for remote access
+   - Includes caching and advanced features
+   - Used for AI agents like Flowhunt
+
+2. **stdio Mode** (`server.py`):
+   - Standard MCP stdio implementation
+   - Direct integration with Claude Desktop
+   - Simpler, lightweight implementation
+
+### Core Components
+
+- **`odoo_service.py`**: Advanced service for HTTP mode with caching
+- **`odoo_client.py`**: Simple client for stdio mode
+- **`config.py`**: Configuration management with Pydantic
+- **`cache_service.py`**: Caching system for HTTP mode
 
 ## Development Commands
 
@@ -13,13 +37,15 @@ This is an MCP (Model Context Protocol) server for Odoo ERP integration. It enab
 pip install -e .
 pip install -e ".[dev]"  # For development with test dependencies
 
+# Run HTTP server
+python -m mcp_server_odoo.http_server
+
+# Run stdio server
+python -m mcp_server_odoo
+
 # Run tests
 pytest
 pytest --cov  # With coverage report
-pytest -v  # Verbose output
-
-# Run the MCP server
-python -m mcp_server_odoo
 
 # Type checking
 mypy mcp_server_odoo
@@ -29,65 +55,58 @@ ruff check .
 ruff format .
 ```
 
-## Architecture
-
-### Core Components
-
-1. **MCP Server (`server.py`)**: Implements the MCP protocol, handling requests from AI assistants
-2. **Odoo Client (`odoo_client.py`)**: XML-RPC client for Odoo API communication
-3. **Tools (`tools.py`)**: MCP tool definitions for Odoo operations (search, create, update, delete)
-
-### Key Design Patterns
-
-- **Async/Await**: The server uses asyncio for handling concurrent requests
-- **XML-RPC**: Communication with Odoo uses XML-RPC protocol through `xmlrpc.client`
-- **Environment-based Config**: Sensitive data (URLs, credentials) stored in environment variables
-- **Type Safety**: Use type hints throughout, validate with mypy
-
-### MCP Tools Structure
-
-Tools follow the MCP specification with:
-- `name`: Unique identifier
-- `description`: Human-readable purpose
-- `input_schema`: JSON Schema for parameters
-- `handler`: Async function implementing the tool logic
-
-Example tool pattern:
-```python
-@server.tool()
-async def search_records(model: str, domain: list = None, fields: list = None, limit: int = None):
-    """Search Odoo records"""
-    # Implementation
-```
-
 ## Environment Configuration
 
-Required environment variables (set in `.env` file):
-- `ODOO_URL`: Full URL to Odoo instance (e.g., https://mycompany.odoo.com)
-- `ODOO_DB`: Database name (optional if only one database)
-- `ODOO_USERNAME`: Odoo username
-- `ODOO_PASSWORD` or `ODOO_API_KEY`: Authentication credential
+### HTTP Mode
+Uses comprehensive configuration via `config.py`:
+- Odoo credentials
+- Server settings
+- Cache configuration
+
+### stdio Mode
+Uses simple environment variables:
+- `ODOO_URL`
+- `ODOO_DB`
+- `ODOO_USERNAME`
+- `ODOO_API_KEY` or `ODOO_PASSWORD`
+
+## Usage Patterns
+
+### HTTP Mode (AI Agents)
+```python
+# For Flowhunt and other AI platforms
+# Configure MCP server URL: https://your-ngrok-url.ngrok-free.app
+```
+
+### stdio Mode (Claude Desktop)
+```json
+{
+  "mcpServers": {
+    "odoo": {
+      "command": "python",
+      "args": ["-m", "mcp_server_odoo"],
+      "env": {
+        "ODOO_URL": "https://your-instance.odoo.com",
+        "ODOO_DB": "your-database",
+        "ODOO_USERNAME": "your-email@example.com",
+        "ODOO_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
 
 ## Testing Approach
 
-- Unit tests for individual components (client, tools)
+- Unit tests for both implementations
 - Integration tests with mock Odoo responses
-- Test MCP protocol compliance
+- Test MCP protocol compliance for both modes
 - Validate error handling and edge cases
-
-## Common Odoo Models
-
-When implementing tools, these are frequently used Odoo models:
-- `res.partner`: Contacts (customers, suppliers)
-- `sale.order`: Sales orders
-- `account.move`: Invoices and accounting entries
-- `product.product`: Products
-- `stock.move`: Inventory movements
 
 ## Security Considerations
 
 - Never expose Odoo credentials in logs or error messages
 - Validate and sanitize all inputs before sending to Odoo
-- Implement rate limiting for API calls
-- Use read-only operations where possible
+- Use API keys instead of passwords when possible
+- Implement proper SSL context handling
 - Follow principle of least privilege for Odoo user permissions

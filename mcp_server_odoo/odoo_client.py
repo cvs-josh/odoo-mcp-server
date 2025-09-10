@@ -1,6 +1,7 @@
 """Odoo XML-RPC client for API communication."""
 
 import xmlrpc.client
+import ssl
 from typing import Any, Dict, List, Optional, Union
 from urllib.parse import urljoin
 
@@ -35,14 +36,21 @@ class OdooClient:
         self.password = config.api_key or config.password
         self.uid: Optional[int] = None
         
-        # Initialize XML-RPC endpoints
+        # Create SSL context that doesn't verify certificates (for development)
+        ssl_context = ssl.create_default_context()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        
+        # Initialize XML-RPC endpoints with SSL context
         self.common = xmlrpc.client.ServerProxy(
             urljoin(self.url, "/xmlrpc/2/common"),
+            context=ssl_context,
             allow_none=True,
             use_builtin_types=True,
         )
         self.models = xmlrpc.client.ServerProxy(
             urljoin(self.url, "/xmlrpc/2/object"),
+            context=ssl_context,
             allow_none=True,
             use_builtin_types=True,
         )
@@ -94,7 +102,7 @@ class OdooClient:
             kwargs["limit"] = limit
         if order is not None:
             kwargs["order"] = order
-            
+        
         return self.execute(model, "search", domain, **kwargs)
 
     def search_read(
@@ -115,7 +123,7 @@ class OdooClient:
             kwargs["limit"] = limit
         if order is not None:
             kwargs["order"] = order
-            
+        
         return self.execute(model, "search_read", domain, **kwargs)
 
     def read(
@@ -144,7 +152,7 @@ class OdooClient:
         single_record = isinstance(values, dict)
         if single_record:
             values = [values]
-            
+        
         result = self.execute(model, "create", values)
         return result[0] if single_record else result
 
@@ -157,7 +165,7 @@ class OdooClient:
         """Update records."""
         if isinstance(ids, int):
             ids = [ids]
-            
+        
         return self.execute(model, "write", ids, values)
 
     def unlink(
@@ -168,7 +176,7 @@ class OdooClient:
         """Delete records."""
         if isinstance(ids, int):
             ids = [ids]
-            
+        
         return self.execute(model, "unlink", ids)
 
     def fields_get(

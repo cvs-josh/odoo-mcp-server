@@ -139,9 +139,53 @@ Thumbs.db
 
 # Test files
 test_*.py
-!tests/test_*.py
 
 # Local configuration
 *.local
 .env.local
 .env.*.local
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Docker Compose with credentials (keep example file)
+docker-compose.yml
+docker-compose.override.yml
+
+# Logs
+logs/
+*.log
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+test_*.py
+tests/
+
+# Coverage
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache/
+.hypothesis/
