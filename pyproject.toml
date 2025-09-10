@@ -1,7 +1,7 @@
 [project]
 name = "odoo-mcp-server"
 version = "0.2.0"
-description = "MCP server for Odoo ERP integration - enables AI assistants to interact with Odoo following modern patterns"
+description = "Hybrid MCP server for Odoo ERP integration - supports both HTTP streaming and stdio modes for AI assistants"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{name = "Viktor Zeman", email = "vzeman@gmail.com"}]
@@ -20,7 +20,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "mcp>=1.0.0",
+    "mcp==1.0.0",
     "python-dotenv>=1.0.0",
     "pydantic>=2.0.0",
     "loguru>=0.7.0",
