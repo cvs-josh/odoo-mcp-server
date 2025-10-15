@@ -21,7 +21,7 @@ services:
       - ./logs:/app/logs
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "https://odoo-mcp-server-production-b207.up.railway.app/health"]
+      test: ["CMD", "curl", "-f", "https://odoo-mcp-server-production-b207.up.railway.app:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
