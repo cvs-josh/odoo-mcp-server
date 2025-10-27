@@ -20,6 +20,7 @@ COPY . .
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -e .
+RUN pip install odoo-mcp-server
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
